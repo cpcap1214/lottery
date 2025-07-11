@@ -40,20 +40,54 @@ api.interceptors.response.use(
 // API方法
 export const lotteryAPI = {
   // 取得最新分析結果
-  getLatestAnalysis: () => api.get('/api/latest-number'),
+  getLatestAnalysis: async () => {
+    try {
+      const response = await api.get('/api/latest-number');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.detail || '取得最新分析失敗');
+    }
+  },
   
   // 取得歷史資料
-  getHistory: (page = 1, limit = 10) => 
-    api.get(`/api/history?page=${page}&limit=${limit}`),
+  getHistory: async (page = 1, limit = 10) => {
+    try {
+      const response = await api.get(`/api/history?page=${page}&limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.detail || '取得歷史資料失敗');
+    }
+  },
   
   // 手動更新資料
-  updateData: () => api.post('/api/update'),
+  updateData: async () => {
+    try {
+      const response = await api.post('/api/update');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.detail || '更新資料失敗');
+    }
+  },
   
   // 取得統計資料
-  getStatistics: () => api.get('/api/statistics'),
+  getStatistics: async () => {
+    try {
+      const response = await api.get('/api/statistics');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.detail || '取得統計資料失敗');
+    }
+  },
   
   // 健康檢查
-  healthCheck: () => api.get('/health'),
+  healthCheck: async () => {
+    try {
+      const response = await api.get('/health');
+      return response.data;
+    } catch (error) {
+      throw new Error('API 連線失敗');
+    }
+  },
 };
 
 export default api;
