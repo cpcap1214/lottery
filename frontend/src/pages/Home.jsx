@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { lotteryAPI } from '../services/api';
 import NumberDisplay from '../components/NumberDisplay';
 import UpdateButton from '../components/UpdateButton';
+import PropTypes from 'prop-types';
 
-const Home = () => {
+const Home = ({ navigateTo }) => {
   const [latestData, setLatestData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -62,6 +63,16 @@ const Home = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleHistoryClick = () => {
+    if (navigateTo) {
+      navigateTo('history');
+    } else {
+      // 備用方案：使用 hash 導航
+      window.location.hash = '#/history';
+      window.location.reload();
+    }
   };
 
   useEffect(() => {
@@ -216,7 +227,7 @@ const Home = () => {
           <UpdateButton onUpdate={handleUpdate} />
           
           <button
-            onClick={() => window.location.href = '/history'}
+            onClick={handleHistoryClick}
             className="btn-secondary"
           >
             查看歷史資料
@@ -225,6 +236,10 @@ const Home = () => {
       </div>
     </div>
   );
+};
+
+Home.propTypes = {
+  navigateTo: PropTypes.func
 };
 
 export default Home;

@@ -12,6 +12,10 @@
       "destination": "https://lottery-backend-dhl6.onrender.com/api/$1"
     },
     {
+      "source": "/history",
+      "destination": "/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

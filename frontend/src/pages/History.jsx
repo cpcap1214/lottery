@@ -1,6 +1,17 @@
 import HistoryTable from '../components/HistoryTable';
+import PropTypes from 'prop-types';
 
-const History = () => {
+const History = ({ navigateTo }) => {
+  const handleBackClick = () => {
+    if (navigateTo) {
+      navigateTo('home');
+    } else {
+      // 備用方案
+      window.location.hash = '';
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -17,7 +28,7 @@ const History = () => {
         {/* 返回首頁按鈕 */}
         <div className="text-center mb-6">
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={handleBackClick}
             className="btn-secondary"
           >
             ← 返回首頁
@@ -29,6 +40,10 @@ const History = () => {
       </div>
     </div>
   );
+};
+
+History.propTypes = {
+  navigateTo: PropTypes.func
 };
 
 export default History;

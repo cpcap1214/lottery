@@ -9,27 +9,36 @@ const HistoryTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
+  const [debugInfo, setDebugInfo] = useState('');
   const itemsPerPage = 10;
 
   const fetchHistory = async (page = 1) => {
     setLoading(true);
     setError(null);
+    setDebugInfo(`正在獲取第 ${page} 頁資料...`);
     
     try {
+      console.log('Fetching history page:', page, 'limit:', itemsPerPage);
       const data = await lotteryAPI.getHistory(page, itemsPerPage);
+      
+      console.log('History API response:', data);
+      setDebugInfo(`成功獲取資料: 共 ${data.total} 期，當前第 ${data.page} 頁，每頁 ${data.per_page} 筆`);
+      
       setHistory(data.data);
       setTotal(data.total);
       setTotalPages(Math.ceil(data.total / itemsPerPage));
       setCurrentPage(page);
     } catch (err) {
+      console.error('History fetch error:', err);
       setError(err.message);
-      console.error('取得歷史資料錯誤:', err);
+      setDebugInfo(`錯誤: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    setDebugInfo('組件載入中...');
     fetchHistory();
   }, []);
 
@@ -48,6 +57,9 @@ const HistoryTable = () => {
     });
   };
 
+  // 開發模式下顯示調試信息
+  const isDev = import.meta.env.DEV;
+
   if (loading) {
     return (
       <div className="card">
@@ -55,6 +67,11 @@ const HistoryTable = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <span className="ml-2 text-lg">載入歷史資料中...</span>
         </div>
+        {isDev && (
+          <div className="mt-4 p-2 bg-gray-100 rounded text-sm text-gray-600">
+            調試: {debugInfo}
+          </div>
+        )}
       </div>
     );
   }
@@ -70,6 +87,11 @@ const HistoryTable = () => {
           >
             重新載入
           </button>
+          {isDev && (
+            <div className="mt-4 p-2 bg-red-50 rounded text-sm text-red-600">
+              調試信息: {debugInfo}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -84,9 +106,15 @@ const HistoryTable = () => {
         </div>
       </div>
 
+      {isDev && (
+        <div className="mb-4 p-2 bg-blue-50 rounded text-sm text-blue-600">
+          調試: {debugInfo} | 當前陣列長度: {history.length}
+        </div>
+      )}
+
       {history.length === 0 ? (
         <div className="text-center py-8 text-gray-500 text-xl">
-          目前沒有歷史資料
+          {total > 0 ? '資料載入中...' : '目前沒有歷史資料'}
         </div>
       ) : (
         <>
@@ -147,6 +175,10 @@ const HistoryTable = () => {
                     </button>
                   );
                 })}
+              </div>
+              
+              <div className="text-sm text-gray-600 mx-2">
+                第 {currentPage} 頁，共 {totalPages} 頁
               </div>
               
               <button
