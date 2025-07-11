@@ -1,0 +1,14 @@
+{
+  "name": "lottery-analysis",
+  "version": "1.0.0",
+  "description": "威力彩號碼分析系統",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev",
+    "preview": "cd frontend && npm run preview",
+    "start": "cd frontend && npm run preview"
+  },
+  "keywords": ["lottery", "analysis", "taiwan"],
+  "author": "Claude Code",
+  "license": "MIT"
+}
