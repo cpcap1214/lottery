@@ -39,6 +39,11 @@ class LotteryAnalyzer:
             frequency_analysis, gap_analysis, trend_analysis
         )
         
+        # 計算可能開出的號碼
+        likely_numbers = self._calculate_likely_scores(
+            frequency_analysis, gap_analysis, trend_analysis
+        )
+        
         # 分析特別號
         special_analysis = self._analyze_special_numbers(df)
         
@@ -55,6 +60,7 @@ class LotteryAnalyzer:
         
         return {
             'avoid_number_sets': avoid_numbers,
+            'likely_number_sets': likely_numbers,
             'frequency_analysis': frequency_analysis,
             'gap_analysis': gap_analysis,
             'special_analysis': special_analysis,
@@ -250,6 +256,105 @@ class LotteryAnalyzer:
         # 確保每組都有6個號碼且去重
         final_sets = []
         for i, number_set in enumerate(avoid_number_sets):
+            # 去重並排序
+            unique_set = sorted(list(set(number_set)))
+            # 如果不足6個，從高分號碼中補充
+            if len(unique_set) < 6:
+                supplement = [num for num, score in sorted_scores if num not in unique_set]
+                unique_set.extend(supplement[:6-len(unique_set)])
+            final_sets.append(unique_set[:6])
+        
+        return final_sets
+    
+    def _calculate_likely_scores(self, frequency_analysis: Dict, 
+                               gap_analysis: Dict, trend_analysis: Dict) -> List[List[int]]:
+        """計算可能開出的號碼並推薦10組"""
+        scores = {}
+        
+        for number in self.number_range:
+            # 頻率分數 (頻率越高分數越高)
+            freq_percent = frequency_analysis['frequency_percent'][number]
+            freq_score = min(freq_percent * 2, 70)  # 頻率越高分數越高，最高70分
+            
+            # 間隔分數 (間隔適中的號碼分數高)
+            gap_periods = gap_analysis['gap_data'][number]['gap_periods']
+            # 間隔1-5期的給高分，間隔太久或太短的給低分
+            if gap_periods >= 1 and gap_periods <= 5:
+                gap_score = 40
+            elif gap_periods >= 6 and gap_periods <= 10:
+                gap_score = 30
+            elif gap_periods >= 11 and gap_periods <= 15:
+                gap_score = 20
+            else:
+                gap_score = 10
+            
+            # 趨勢分數 (熱門號碼加分，與避免號碼相反)
+            trend_score = 10 if number not in trend_analysis['cold_numbers'] else 0
+            
+            # 綜合評分
+            total_score = freq_score * 0.5 + gap_score * 0.3 + trend_score * 0.2
+            scores[number] = round(total_score, 2)
+        
+        # 排序所有號碼
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        
+        # 生成10組不同的號碼組合
+        likely_number_sets = []
+        
+        # 第1組：最高分的6個號碼
+        likely_number_sets.append([number for number, score in sorted_scores[:6]])
+        
+        # 第2組：混合高分和中等分數
+        likely_number_sets.append([number for number, score in sorted_scores[2:8]])
+        
+        # 第3組：更多中等分數號碼
+        likely_number_sets.append([number for number, score in sorted_scores[4:10]])
+        
+        # 第4組：間隔適中的號碼優先 (修改邏輯)
+        gap_medium = sorted(self.number_range, 
+                           key=lambda x: abs(gap_analysis['gap_data'][x]['gap_periods'] - 3))
+        likely_number_sets.append(gap_medium[:6])
+        
+        # 第5組：頻率最高的號碼優先  
+        freq_sorted = sorted(self.number_range,
+                            key=lambda x: frequency_analysis['frequency_percent'][x],
+                            reverse=True)
+        likely_number_sets.append(freq_sorted[:6])
+        
+        # 第6組：熱門號碼優先 (與避免號碼相反)
+        hot_numbers = [num for num in self.number_range if num not in trend_analysis['cold_numbers']]
+        if len(hot_numbers) >= 6:
+            likely_number_sets.append(hot_numbers[:6])
+        else:
+            # 補充高分號碼
+            supplement = [number for number, score in sorted_scores if number not in hot_numbers]
+            likely_number_sets.append(hot_numbers + supplement[:6-len(hot_numbers)])
+        
+        # 第7組：綜合分數中段的號碼
+        likely_number_sets.append([number for number, score in sorted_scores[6:12]])
+        
+        # 第8組：隨機組合高分號碼
+        import random
+        high_score_numbers = [number for number, score in sorted_scores[:15]]
+        random.shuffle(high_score_numbers)
+        likely_number_sets.append(high_score_numbers[:6])
+        
+        # 第9組：平衡各種因素
+        balanced = []
+        # 2個最高頻率分數
+        balanced.extend([number for number, score in sorted_scores[:2]])
+        # 2個最高間隔分數
+        balanced.extend(gap_medium[:2])
+        # 2個熱門號碼
+        balanced.extend(hot_numbers[:2])
+        likely_number_sets.append(balanced)
+        
+        # 第10組：保守選擇（中等分數）
+        likely_number_sets.append([number for number, score in sorted_scores[8:14]])
+        
+        # 確保每組都有6個號碼且去重
+        final_sets = []
+        for i, number_set in enumerate(likely_number_sets):
             # 去重並排序
             unique_set = sorted(list(set(number_set)))
             # 如果不足6個，從高分號碼中補充

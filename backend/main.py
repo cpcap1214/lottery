@@ -48,6 +48,8 @@ class LatestAnalysisResponse(BaseModel):
     latest_special: int
     recommended_avoid_numbers: List[int]
     recommended_avoid_sets: List[List[int]]
+    recommended_likely_numbers: List[int]
+    recommended_likely_sets: List[List[int]]
     analysis_summary: dict
 
 class HistoryResponse(BaseModel):
@@ -117,6 +119,7 @@ async def get_latest_analysis():
             analysis_result = analyzer.analyze_avoid_numbers()
         
         avoid_sets = analysis_result['avoid_number_sets'] if analysis_result else [analysis['avoid_numbers']]
+        likely_sets = analysis_result['likely_number_sets'] if analysis_result else []
         
         return LatestAnalysisResponse(
             latest_period=latest_draw.period,
@@ -125,6 +128,8 @@ async def get_latest_analysis():
             latest_special=latest_draw.special_number,
             recommended_avoid_numbers=analysis['avoid_numbers'],
             recommended_avoid_sets=avoid_sets,
+            recommended_likely_numbers=likely_sets[0] if likely_sets else [],
+            recommended_likely_sets=likely_sets,
             analysis_summary={
                 "total_periods": analysis['total_periods'],
                 "last_update": analysis['analysis_date']
@@ -216,6 +221,7 @@ async def run_analysis_endpoint():
                 "success": True,
                 "message": "分析完成",
                 "avoid_number_sets": result['avoid_number_sets'],
+                "likely_number_sets": result['likely_number_sets'],
                 "total_periods": result['total_periods']
             }
         else:

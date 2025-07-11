@@ -5,6 +5,8 @@ const NumberDisplay = ({ numbers, special, title, type = 'normal' }) => {
     switch (type) {
       case 'avoid':
         return 'number-box-avoid';
+      case 'likely':
+        return 'bg-green-100 border-2 border-green-300 text-green-800 rounded-lg p-4 text-center font-bold text-2xl min-w-[60px] min-h-[60px] flex items-center justify-center';
       case 'special':
         return 'bg-yellow-100 border-2 border-yellow-300 text-yellow-800 rounded-lg p-4 text-center font-bold text-2xl min-w-[60px] min-h-[60px] flex items-center justify-center';
       default:
@@ -53,7 +55,7 @@ NumberDisplay.propTypes = {
   numbers: PropTypes.arrayOf(PropTypes.number).isRequired,
   special: PropTypes.number,
   title: PropTypes.string,
-  type: PropTypes.oneOf(['normal', 'avoid', 'special'])
+  type: PropTypes.oneOf(['normal', 'avoid', 'likely', 'special'])
 };
 
 export default NumberDisplay;

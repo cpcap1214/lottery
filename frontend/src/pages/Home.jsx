@@ -145,6 +145,62 @@ const Home = ({ navigateTo }) => {
           />
         </div>
 
+        {/* 推薦會開出的號碼 */}
+        <div className="card mb-8">
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold text-green-700 mb-2">
+              下期會開出的號碼
+            </h2>
+          </div>
+          
+          {/* 主要推薦 */}
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">🎯 下期會開出的號碼</h3>
+            <NumberDisplay 
+              numbers={latestData?.recommended_likely_numbers}
+              title=""
+              type="likely"
+            />
+          </div>
+
+          {/* 10組建議 */}
+          {latestData?.recommended_likely_sets && (
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">📊 10組其他號碼建議</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {latestData.recommended_likely_sets.map((numbers, index) => (
+                  <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                    <div className="font-medium text-gray-700 mb-2">
+                      第 {index + 1} 組
+                      {index === 0 && <span className="ml-2 text-green-600">（主要推薦）</span>}
+                      {index === 1 && <span className="ml-2 text-blue-600">（混合策略）</span>}
+                      {index === 2 && <span className="ml-2 text-purple-600">（中等風險）</span>}
+                      {index === 3 && <span className="ml-2 text-orange-600">（間隔適中）</span>}
+                      {index === 4 && <span className="ml-2 text-pink-600">（頻率優先）</span>}
+                      {index === 5 && <span className="ml-2 text-indigo-600">（熱門優先）</span>}
+                      {index === 6 && <span className="ml-2 text-yellow-600">（中段選擇）</span>}
+                      {index === 7 && <span className="ml-2 text-cyan-600">（隨機組合）</span>}
+                      {index === 8 && <span className="ml-2 text-teal-600">（平衡策略）</span>}
+                      {index === 9 && <span className="ml-2 text-gray-600">（保守選擇）</span>}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {numbers.map((number) => (
+                        <span 
+                          key={number}
+                          className="inline-flex items-center justify-center w-10 h-10 
+                                   bg-green-100 text-green-800 font-bold rounded-full text-sm"
+                        >
+                          {number}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* 推薦避免號碼 */}
         <div className="card mb-8">
           <div className="text-center mb-6">
