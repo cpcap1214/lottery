@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 根據環境決定API基礎URL
 const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://your-backend-app.onrender.com'  // 生產環境 - 請替換為實際的Render URL
+  ? 'https://lottery-backend-dhl6.onrender.com'  // 生產環境 - 請替換為實際的Render URL
   : 'http://localhost:8000';  // 開發環境
 
 const api = axios.create({

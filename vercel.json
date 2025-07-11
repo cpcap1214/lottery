@@ -9,7 +9,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://your-backend-app.onrender.com/api/$1"
+      "destination": "https://lottery-backend-dhl6.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",
