@@ -76,82 +76,29 @@ class StatisticsResponse(BaseModel):
 async def startup_event():
     """應用啟動時初始化資料庫"""
     print("開始初始化資料庫...")
-    create_tables()
-    print("資料庫初始化完成")
-    
-    # 檢查資料庫是否有資料
     try:
+        create_tables()
+        print("資料庫初始化完成")
+        
+        # 簡單檢查資料庫連線
         total_draws = db_manager.get_total_draws_count()
         print(f"資料庫現有開獎資料: {total_draws} 筆")
         
         if total_draws == 0:
-            print("資料庫為空，嘗試載入歷史開獎資料...")
-            
-            # 先嘗試載入範例資料作為預設
+            print("資料庫為空，需要手動更新資料或載入範例資料")
+            # 只載入範例資料，不執行爬蟲
             try:
                 from setup_db import create_sample_data
                 sample_count = create_sample_data()
                 print(f"已載入 {sample_count} 筆範例資料")
             except Exception as e:
                 print(f"載入範例資料失敗: {e}")
-            
-            # 嘗試執行爬蟲更新更多資料
-            try:
-                print("嘗試執行爬蟲獲取真實資料...")
-                result = crawler.update_database(max_pages=3)
-                print(f"爬蟲執行結果: {result}")
-                
-                # 檢查載入結果
-                final_count = db_manager.get_total_draws_count()
-                print(f"最終資料庫有 {final_count} 筆開獎資料")
-                
-                if final_count > 0:
-                    # 執行初始分析
-                    try:
-                        print("執行初始分析...")
-                        analysis_result = analyzer.analyze_avoid_numbers()
-                        if analysis_result:
-                            print("初始分析完成")
-                        else:
-                            print("初始分析失敗")
-                    except Exception as e:
-                        print(f"初始分析錯誤: {e}")
-                        
-            except Exception as e:
-                print(f"爬蟲執行失敗: {e}")
-                # 確認至少有範例資料
-                total_draws = db_manager.get_total_draws_count()
-                if total_draws == 0:
-                    print("嘗試再次載入範例資料...")
-                    try:
-                        from setup_db import create_sample_data
-                        create_sample_data()
-                    except Exception as e2:
-                        print(f"載入範例資料也失敗: {e2}")
-                        
-        else:
-            print("資料庫已有資料，跳過載入")
-            
+        
+        print("啟動完成")
+        
     except Exception as e:
-        print(f"啟動時資料檢查錯誤: {e}")
-        # 如果出錯，確保至少有範例資料
-        try:
-            from setup_db import create_sample_data
-            create_sample_data()
-            print("已載入範例資料作為後備")
-        except Exception as e2:
-            print(f"載入範例資料也失敗: {e2}")
-    
-    # 最終檢查
-    try:
-        final_total = db_manager.get_total_draws_count()
-        latest_draw = db_manager.get_latest_draw()
-        if latest_draw:
-            print(f"啟動完成！共有 {final_total} 筆開獎資料，最新期數: {latest_draw.period}")
-        else:
-            print("⚠️  警告：無法取得任何開獎資料")
-    except Exception as e:
-        print(f"最終檢查失敗: {e}")
+        print(f"啟動時發生錯誤: {e}")
+        # 不要讓錯誤阻止服務啟動
 
 # API 端點
 @app.get("/", summary="根路徑")
