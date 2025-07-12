@@ -84,15 +84,9 @@ async def startup_event():
         total_draws = db_manager.get_total_draws_count()
         print(f"資料庫現有開獎資料: {total_draws} 筆")
         
+        # 不載入範例資料，只提示需要手動更新
         if total_draws == 0:
-            print("資料庫為空，需要手動更新資料或載入範例資料")
-            # 只載入範例資料，不執行爬蟲
-            try:
-                from setup_db import create_sample_data
-                sample_count = create_sample_data()
-                print(f"已載入 {sample_count} 筆範例資料")
-            except Exception as e:
-                print(f"載入範例資料失敗: {e}")
+            print("資料庫為空，請使用 /api/update 端點手動更新資料")
         
         print("啟動完成")
         
@@ -219,6 +213,42 @@ async def manual_update(background_tasks: BackgroundTasks):
             message=f"更新失敗: {str(e)}",
             updated_count=0
         )
+
+@app.post("/api/clear-mock-data", summary="清理模擬資料")
+async def clear_mock_data():
+    """清理資料庫中的模擬資料"""
+    try:
+        success = db_manager.clear_mock_data()
+        if success:
+            return {
+                "success": True,
+                "message": "模擬資料清理完成"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "清理模擬資料失敗"
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"清理失敗: {str(e)}")
+
+@app.post("/api/clear-all-data", summary="清理所有資料")
+async def clear_all_data():
+    """清理資料庫中的所有資料"""
+    try:
+        success = db_manager.clear_all_data()
+        if success:
+            return {
+                "success": True,
+                "message": "所有資料清理完成"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "清理所有資料失敗"
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"清理失敗: {str(e)}")
 
 @app.get("/api/statistics", response_model=StatisticsResponse, summary="取得統計資料")
 async def get_statistics():

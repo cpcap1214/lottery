@@ -139,5 +139,53 @@ class DatabaseManager:
         finally:
             db.close()
 
+    def clear_all_data(self) -> bool:
+        """清理所有開獎資料和分析結果"""
+        db = self.get_db()
+        try:
+            # 刪除所有分析結果
+            db.query(AnalysisResult).delete()
+            # 刪除所有開獎資料
+            db.query(LotteryDraw).delete()
+            db.commit()
+            print("已清理所有資料")
+            return True
+        except Exception as e:
+            db.rollback()
+            print(f"清理資料失敗: {e}")
+            return False
+        finally:
+            db.close()
+
+    def clear_mock_data(self) -> bool:
+        """清理模擬資料（2025年或期數格式錯誤的資料）"""
+        db = self.get_db()
+        try:
+            # 刪除2025年的資料
+            deleted_2025 = db.query(LotteryDraw).filter(
+                LotteryDraw.draw_date >= date(2025, 1, 1)
+            ).delete()
+            
+            # 刪除期數格式錯誤的資料（包含000的期數）
+            deleted_wrong_format = db.query(LotteryDraw).filter(
+                LotteryDraw.period.like('%000%')
+            ).delete()
+            
+            # 刪除沒有日期的資料
+            deleted_no_date = db.query(LotteryDraw).filter(
+                LotteryDraw.draw_date.is_(None)
+            ).delete()
+            
+            db.commit()
+            total_deleted = deleted_2025 + deleted_wrong_format + deleted_no_date
+            print(f"已清理模擬資料: {total_deleted} 筆")
+            return True
+        except Exception as e:
+            db.rollback()
+            print(f"清理模擬資料失敗: {e}")
+            return False
+        finally:
+            db.close()
+
 # 全域資料庫管理員實例
 db_manager = DatabaseManager()
