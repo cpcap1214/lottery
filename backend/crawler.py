@@ -37,7 +37,7 @@ class PowerballCrawler:
         requests.get = patched_get
     
     def fetch_latest_draws(self, max_pages: int = 5) -> List[Dict]:
-        """獲取從2024年到現在的完整威力彩開獎資料"""
+        """獲取從2020年到現在的完整威力彩開獎資料"""
         all_draws = []
         
         try:
@@ -50,15 +50,15 @@ class PowerballCrawler:
                 parsed_current = self._parse_crawler_data(current_data)
                 all_draws.extend(parsed_current)
             
-            # 獲取從2024年1月到現在的所有資料
+            # 獲取從2020年1月到現在的所有資料
             current_date = date.today()
-            start_year = 2024
+            start_year = 2020  # 修改為2020年開始
             start_month = 1
             
             # 計算需要獲取的年月組合
             year_month_list = []
             
-            # 從2024年1月開始
+            # 從2020年1月開始
             for year in range(start_year, current_date.year + 1):
                 start_m = start_month if year == start_year else 1
                 end_m = current_date.month if year == current_date.year else 12
@@ -74,6 +74,7 @@ class PowerballCrawler:
             # 按倒序獲取（從最新的開始）
             year_month_list.reverse()
             
+            processed_months = 0
             for year_month in year_month_list:
                 try:
                     print(f"獲取 {year_month[0]}-{year_month[1]} 的資料...")
@@ -86,11 +87,17 @@ class PowerballCrawler:
                     else:
                         print(f"{year_month[0]}-{year_month[1]} 沒有資料")
                     
+                    processed_months += 1
+                    
                     # 每獲取5個月的資料就暫停一下，避免請求過快
-                    if len([x for x in year_month_list if year_month_list.index(x) <= year_month_list.index(year_month)]) % 5 == 0:
-                        print("暫停2秒避免請求過快...")
+                    if processed_months % 5 == 0:
+                        print(f"已處理 {processed_months} 個月，暫停3秒避免請求過快...")
                         import time
-                        time.sleep(2)
+                        time.sleep(3)
+                        
+                    # 每獲取12個月的資料就顯示進度
+                    if processed_months % 12 == 0:
+                        print(f"進度: 已處理 {processed_months}/{len(year_month_list)} 個月，目前共 {len(all_draws)} 筆資料")
                         
                 except Exception as e:
                     print(f"獲取 {year_month[0]}-{year_month[1]} 資料失敗: {e}")
@@ -102,7 +109,7 @@ class PowerballCrawler:
         # 按期數排序，最新的在前面
         all_draws.sort(key=lambda x: int(x['period']), reverse=True)
         
-        print(f"總共獲取 {len(all_draws)} 筆真實威力彩資料 (從2024年到現在)")
+        print(f"總共獲取 {len(all_draws)} 筆真實威力彩資料 (從2020年到現在)")
         return all_draws
     
     def _parse_crawler_data(self, data: List[Dict]) -> List[Dict]:
