@@ -189,9 +189,9 @@ async def get_history(page: int = 1, limit: int = 10):
 async def manual_update(background_tasks: BackgroundTasks):
     """手動觸發資料更新"""
     try:
-        # 先清理模擬資料
-        print("開始清理模擬資料...")
-        db_manager.clear_mock_data()
+        # 清理所有資料，重新開始
+        print("開始清理所有資料...")
+        db_manager.clear_all_data()
         
         # 執行爬蟲更新
         print("開始手動更新資料...")
