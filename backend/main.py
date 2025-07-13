@@ -84,9 +84,34 @@ async def startup_event():
         total_draws = db_manager.get_total_draws_count()
         print(f"資料庫現有開獎資料: {total_draws} 筆")
         
-        # 不載入範例資料，只提示需要手動更新
         if total_draws == 0:
-            print("資料庫為空，請使用 /api/update 端點手動更新資料")
+            print("資料庫為空，自動載入真實開獎資料...")
+            try:
+                # 直接執行爬蟲載入真實資料
+                result = crawler.update_database(max_pages=3)
+                print(f"自動載入結果: {result}")
+                
+                # 檢查載入結果
+                new_total = db_manager.get_total_draws_count()
+                print(f"載入後資料庫共有: {new_total} 筆資料")
+                
+                if new_total > 0:
+                    print("✅ 真實資料載入成功")
+                else:
+                    print("⚠️ 真實資料載入失敗，載入範例資料...")
+                    from setup_db import create_sample_data
+                    sample_count = create_sample_data()
+                    print(f"已載入 {sample_count} 筆範例資料")
+                    
+            except Exception as e:
+                print(f"自動載入真實資料失敗: {e}")
+                # 載入範例資料作為備案
+                try:
+                    from setup_db import create_sample_data
+                    sample_count = create_sample_data()
+                    print(f"已載入 {sample_count} 筆範例資料")
+                except Exception as e2:
+                    print(f"載入範例資料也失敗: {e2}")
         
         print("啟動完成")
         
